@@ -428,6 +428,34 @@ def listarClientes():
     center(ventanalistarCliente)
     ventanalistarCliente.mainloop()
 
+carroVenta=[]
+carropStockVta=[]
+
+def agregarVenta():
+    listaAgregarVta=[]
+    listaAgregarVta.append(entryFechaVta.get())
+    listaAgregarVta.append(int(entryCodCliente.get()))
+    listaAgregarVta.append(entryNombreCliente.get())
+    listaAgregarVta.append(entryNombre.get())
+    listaAgregarVta.append("condicion")
+    listaAgregarVta.append(int(entryCantidadVta.get()))
+    listaAgregarVta.append(int(entryPrecioVta.get()))
+    subtotal=int(entryCantidadVta.get())*int(entryPrecioVta.get())
+    listaAgregarVta.append(subtotal)
+    """listapStock=[]
+    listapStock.append(entryNombre.get())
+    listapStock.append(int(entryCantidad.get()))
+    listapStock.append(int(entryPrecioCompra.get()))
+    listapStock.append(int(entryCodCompra.get()))"""
+    print (listaAgregarVta)
+    """carroVenta.append(listaAgregarVta)
+    carropStockVta.append(listapStock)"""
+    nivel1=treeVenta.insert("", "end", text=entryNombre.get(),values=(entryCantidadVta.get(),entryPrecioVta.get(),subtotal))
+    entryCodCompra.delete(0,END)
+    entryNombre.delete(0,END)
+    entryCantidadVta.delete(0,END)
+    entryPrecioVta.delete(0,END)
+
 def ventaProducto(a):
     sacarFrame()
     global frVentas
@@ -449,8 +477,9 @@ def ventaProducto(a):
     canvas.create_text(100,325, text="Nombre del producto:",font=('Helvetica',15,"bold"),fill="#F34B2C",anchor="w")
     canvas.create_text(100,360, text="Cantidad de productos:",font=('Helvetica',15,"bold"),fill="#F34B2C",anchor="w")
     canvas.create_text(100,395, text="Precio unitario:",font=('Helvetica',15,"bold"),fill="#F34B2C",anchor="w")
-    entryFecha=Entry(frVentas,width="10",font=('Helvetica',14))
-    entryFecha.place(x=310,y=170)
+    global entryFechaVta
+    entryFechaVta=Entry(frVentas,width="10",font=('Helvetica',14))
+    entryFechaVta.place(x=310,y=170)
     global entryCodCliente
     entryCodCliente=Entry(frVentas,width="5",font=('Helvetica',14),state="readonly")
     entryCodCliente.place(x=280,y=205)
@@ -469,29 +498,41 @@ def ventaProducto(a):
     global entryNombre
     entryNombre=Entry(frVentas,width='20',font=('Helvetica',14),state="readonly")
     entryNombre.place(x=310,y=310)
-    entryCantidad=Entry(frVentas,width='5',font=('Helvetica',14))
-    entryCantidad.place(x=325,y=345)
-    entryPrecio=Entry(frVentas,width='5',font=('Helvetica',14))
-    entryPrecio.place(x=250,y=380)
+    global entryCantidadVta
+    entryCantidadVta=Entry(frVentas,width='5',font=('Helvetica',14))
+    entryCantidadVta.place(x=325,y=345)
+    global entryPrecioVta
+    entryPrecioVta=Entry(frVentas,width='5',font=('Helvetica',14))
+    entryPrecioVta.place(x=250,y=380)
     condicion=IntVar()
     contado=Radiobutton(frVentas,text='Contado',value=0,bg='#cdcac3',font=('Helvetica',15))
-    contado.place(x=750,y=350)
+    contado.place(x=750,y=400)
     cuentacorriente=Radiobutton(frVentas,text='Cta.Cte.',value=1,bg='#cdcac3',font=('Helvetica',15))
-    cuentacorriente.place(x=900,y=350)
-    btAgregarVenta=Button(frVentas,text="Agregar",width='15',font=("Helvetica",15),bg="#F7A998")
-    btAgregarVenta.place(x=150,y=420)
+    cuentacorriente.place(x=900,y=400)
+    btAgregarVenta=Button(frVentas,text="Agregar",width='15',font=("Helvetica",15),bg="#F7A998",command=agregarVenta)
+    btAgregarVenta.place(x=150,y=470)
     canvas.create_text(700,150, text="Resumen:",font=('Helvetica',15,"bold","underline"),fill="#F34B2C")
-    listCarro=Listbox(frVentas,width=100,height=10)
-    listCarro.place (x=600,y=170)
-    canvas.create_text(1060,355, text="TOTAL:",font=('Helvetica',15,"bold"),fill="#F34B2C")
+    global treeVenta
+    treeVenta=ttk.Treeview(frVentas,style="miStyle.Treeview")
+    treeVenta.place(x=650,y=170)
+    treeVenta["columns"]=("one","two","three")
+    treeVenta.column("#0", width=280, minwidth=100,stretch=NO)
+    treeVenta.column("one", width=100, minwidth=200,stretch=NO)
+    treeVenta.column("two", width=100, minwidth=100,stretch=NO)
+    treeVenta.column("three", width=80, minwidth=80,stretch=NO)
+    treeVenta.heading("#0",text="Producto")
+    treeVenta.heading("one", text="Cantidad")
+    treeVenta.heading("two", text="Precio unit")
+    treeVenta.heading("three", text="Subtotal")
+    canvas.create_text(1060,415, text="TOTAL:",font=('Helvetica',15,"bold"),fill="#F34B2C")
     entryTotal=Entry(frVentas,width='8',font=('Helvetica',14),state='readonly')
-    entryTotal.place(x=1110,y=340)
-    btComprar=Button(frVentas,text="Vender",width='15',font=("Helvetica",15),bg="#F7A998")
-    btComprar.place(x=610,y=400)
+    entryTotal.place(x=1110,y=400)
+    btVender=Button(frVentas,text="Vender",width='15',font=("Helvetica",15),bg="#F7A998")
+    btVender.place(x=610,y=450)
     btCancelar=Button(frVentas,text="Cancelar",width='15',font=("Helvetica",15),bg="#F7A998")
-    btCancelar.place(x=810,y=400)
+    btCancelar.place(x=810,y=450)
     btMenuVenta=Button(frVentas,text="Menu ventas",width='15',font=("Helvetica",15),bg="#F7A998",command=frameVentas)
-    btMenuVenta.place(x=1010,y=400)
+    btMenuVenta.place(x=1010,y=450)
 
 def ventaRopa():
     sacarFrame()

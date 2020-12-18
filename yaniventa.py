@@ -57,6 +57,8 @@ def cerrarVentana():
         ventanalistarCliente.destroy()
     elif(ventanaClose==5):
         nuevoCliente.destroy()
+    elif(ventanaClose==6):
+        ventanalistarVta.destroy()
 
 def center(toplevel): 
     toplevel.update_idletasks() 
@@ -69,6 +71,76 @@ def center(toplevel):
 
 def frameSalir():
     ventana.destroy()
+
+def listarproductosVta(a):
+
+    global ventanalistarVta
+    ventanalistarVta=Tk()
+    global ventanaClose
+    ventanaClose=6
+    ventanalistarVta.config(bg="#F7A998")
+    ventanalistarVta.title("Lista de Stock")
+    ventanalistarVta.geometry("400x300")
+    lbListar=Label(ventanalistarVta,text="Lista de productos",font=('Helvetica',15,"bold"),bg="#F7A998",fg="white")
+    lbListar.place(x=100,y=10)
+    global treelistarVta
+    treelistarVta=ttk.Treeview(ventanalistarVta,style="miStyle.Treeview")
+    treelistarVta.place(x=50,y=50)
+    treelistarVta["columns"]=("one")
+    treelistarVta.column("#0", width=100, minwidth=100,stretch=NO)
+    treelistarVta.column("one", width=200, minwidth=200,stretch=NO)
+    treelistarVta.heading("#0",text="Código")
+    treelistarVta.heading("one", text="Producto")
+    def pasarProdVenta(evento):
+        global indiceVta
+        indiceVta =((treelistarVta.index(treelistarVta.selection())+1),)
+        print (indiceVta)
+        if (a=="bagues"):
+            conexion=sqlite3.connect("yanina.db")
+            tabla = conexion.cursor()
+            tabla.execute("SELECT * FROM StockBagues WHERE id=?",indiceVta)
+            conexion.commit()
+            datos = tabla.fetchall()
+            tabla.close()
+            print (datos)
+            print (datos[0][1])
+        if (a=="ropa"):
+            conexion=sqlite3.connect("yanina.db")
+            tabla = conexion.cursor()
+            tabla.execute("SELECT * FROM StockRopa WHERE id=?",indiceVta)
+            conexion.commit()
+            datos = tabla.fetchall()
+            tabla.close()
+            print (datos)
+            print (datos[0][1])
+        entryCodVenta.config(state="normal")
+        entryNombre.config(state="normal")
+        entryCodVenta.delete(0,END)
+        entryNombre.delete(0,END)
+        entryCodVenta.insert(0,datos[0][0])
+        entryNombre.insert(0,datos[0][1])
+        entryCodVenta.config(state="readonly")
+        entryNombre.config(state="readonly")
+    treelistarVta.bind ("<<TreeviewSelect>>",pasarProdVenta)
+    if(a=="bagues"):
+        conexion=sqlite3.connect("yanina.db")
+        cursor=conexion.cursor()
+        cursor.execute("SELECT * FROM StockBagues")
+        conexion.commit()
+        productos=cursor.fetchall()
+        for p in productos:
+            nivel1=treelistarVta.insert("", "end", text=p[0],values=(p[1],p[2]))
+    elif(a=="ropa"):
+        conexion=sqlite3.connect("yanina.db")
+        cursor=conexion.cursor()
+        cursor.execute("SELECT * FROM StockRopa")
+        conexion.commit()
+        productos=cursor.fetchall()
+        for p in productos:
+            nivel1=treelistarVta.insert("", "end", text=p[0],values=(p[1],p[2]))
+    conexion.close()
+    center(ventanalistarVta)
+    ventanalistarVta.mainloop()
 
 def listarproductos(a):
     global ventanalistar
@@ -112,7 +184,7 @@ def listarproductos(a):
             print (datos[0][1])
         entryCodCompra.config(state="normal")
         entryNombre.config(state="normal")
-        entryCodCompra.delete(0,END)
+        entryCodVenta.delete(0,END)
         entryNombre.delete(0,END)
         entryCodCompra.insert(0,datos[0][0])
         entryNombre.insert(0,datos[0][1])
@@ -138,11 +210,14 @@ def listarproductos(a):
     conexion.close()
     center(ventanalistar)
     ventanalistar.mainloop()
-    
+
+#función para validar datos
+
+
 
 #####################################################AQUI COMIENZA EL MÓDULO DE PAGOS############################################################################
 
-def frameSaldoProv():
+"""def frameSaldoProv():
     sacarFrame()
     global frSaldoProv
     frSaldoProv=Frame(ventana)
@@ -169,7 +244,7 @@ def frameSaldoProv():
     btMenuPagos.place(x=675,y=255)
     listSaldo=Listbox(frSaldoProv,width=100,height=20)
     listSaldo.place (x=350,y=300)
-
+"""
 def frameSaldoCliente():
     sacarFrame()
     global frSaldoCliente
@@ -183,22 +258,29 @@ def frameSaldoCliente():
     canvas.place(x=0,y=0)
     canvas.create_image(0,0,image=imgFondoB,anchor=NW)
     canvas.create_text(700,100, text="SALDO CLIENTES",font=('Helvetica',45,"underline","bold"),fill="#F34B2C")
-    canvas.create_text(500,200, text="Número de cliente:",font=('Helvetica',15,"bold"),fill="#F34B2C",anchor="w")
-    canvas.create_text(500,235, text="Cliente:",font=('Helvetica',15,"bold"),fill="#F34B2C",anchor="w")
-    entryCodCliente=Entry(frSaldoCliente,width="5",font=('Helvetica',14))
-    entryCodCliente.place(x=680,y=185)
-    entryNombreCliente=Entry(frSaldoCliente,width="20",font=('Helvetica',14),state="readonly")
-    entryNombreCliente.place(x=575,y=220)
-    btVerCod=Button(frSaldoCliente,text="Ver Cod",width='8',font=("Helvetica",12),bg="#F7A998")
-    btVerCod.place(x=750,y=182)
-    btVerSaldo=Button(frSaldoCliente,text="Ver saldo",width='15',font=("Helvetica",15),bg="#F7A998")
-    btVerSaldo.place(x=475,y=255)
-    btMenuPagos=Button(frSaldoCliente,text="Menu pagos",width='15',font=("Helvetica",15),bg="#F7A998",command=framePagos)
-    btMenuPagos.place(x=675,y=255)
-    listSaldo=Listbox(frSaldoCliente,width=100,height=20)
-    listSaldo.place (x=350,y=300)
+    treelistarSaldos=ttk.Treeview(frSaldoCliente,style="miStyle.Treeview")
+    treelistarSaldos.place(x=450,y=200)
+    treelistarSaldos["columns"]=("one","two")
+    treelistarSaldos.column("#0", width=100, minwidth=100,stretch=NO)
+    treelistarSaldos.column("one", width=200, minwidth=200,stretch=NO)
+    treelistarSaldos.column("two", width=200, minwidth=100,stretch=NO)
+    treelistarSaldos.heading("#0",text="Código")
+    treelistarSaldos.heading("one", text="Cliente")
+    treelistarSaldos.heading("two", text="Saldo")
+    conexion=sqlite3.connect("yanina.db")
+    cursor=conexion.cursor()
+    cursor.execute("SELECT * FROM Cliente")
+    conexion.commit()
+    clientes=cursor.fetchall()
+    for c in clientes:
+        print (c)
+        nivel1=treelistarSaldos.insert("", "end", text=c[0],values=(c[1],c[2]))
+    conexion.close()
+    btMenuPagos=Button(frSaldoCliente,text="Menu Principal",width='15',font=("Helvetica",15),bg="#F7A998",command=framePrincipal)
+    btMenuPagos.place(x=600,y=450)
     
-def framePago():
+    
+"""def framePago():
     sacarFrame()
     global frpagos
     frpagos=Frame(ventana)
@@ -297,7 +379,7 @@ def framePagos():
     btSaldoProv.place(x=820,y=200)
     btMenu=Button(frPago, text="Menú Principal",width='20',font=('Helvetica',15),bg="#F7A998",command=framePrincipal)
     btMenu.place(x=1070,y=200)
-
+"""
 #####################################################AQUI COMIENZA EL MÓDULO DE VENTAS############################################################################
 
 def consultaVenta():
@@ -431,30 +513,178 @@ def listarClientes():
 carroVenta=[]
 carropStockVta=[]
 
+def condiciones():
+    s=c.get()
+    print(s)
+    global condicionVenta
+    if(s== 0):
+        condicionVenta = "contado"
+    elif(s== 1):
+        condicionVenta = "cuenta corriente"
+
+def terminarVenta(a):
+    print(condicionVenta)
+    print(carroVenta)
+    if (a == "bagues"):
+        for venta in carroVenta:
+            venta.insert(4, condicionVenta)
+            conexion = sqlite3.connect("yanina.db")
+            cursor = conexion.cursor()
+            cursor.execute(
+                "INSERT INTO Ventas (fecha,codigo,nombre,detalle,condicion,cantidad,punitario,ptotal) VALUES(?,?,?,?,?,?,?,?)", venta)
+            conexion.commit()
+            conexion.close()
+        conexion2 = sqlite3.connect("yanina.db")
+        cursor2 = conexion2.cursor()
+        cursor2.execute("SELECT id FROM StockBagues")
+        conexion2.commit()
+        datos = cursor2.fetchall()
+        conexion2.close()
+        idDeStock = []
+        for dato in datos:
+            idDeStock.append(dato[0])
+        print(idDeStock)
+        print(carropStockVta, " hola")
+        for venta in carropStockVta:
+            if venta[1] in idDeStock:
+                idd = (venta[1],)
+                extraerStock = sqlite3.connect("yanina.db")
+                cursorExt = extraerStock.cursor()
+                cursorExt.execute(
+                    "SELECT cantidad FROM StockBagues WHERE id=?", idd)
+                extraerStock.commit()
+                stock = cursorExt.fetchall()
+                print(stock)
+                print(stock[0][0])
+                extraerStock.close()
+                stockNuevo = int(stock[0][0])-int(venta[0])
+                venta[0] = stockNuevo
+                conexion = sqlite3.connect("yanina.db")
+                cursor = conexion.cursor()
+                print(venta)
+                cursor.execute(
+                    "UPDATE StockBagues SET cantidad=? WHERE id=?", venta)
+                conexion.commit()
+                conexion.close()
+    else:
+        for venta in carroVenta:
+            venta.insert(4, condicionVenta)
+            conexion = sqlite3.connect("yanina.db")
+            cursor = conexion.cursor()
+            cursor.execute(
+                "INSERT INTO Ventas (fecha,codigo,nombre,detalle,condicion,cantidad,punitario,ptotal) VALUES(?,?,?,?,?,?,?,?)", venta)
+            conexion.commit()
+            conexion.close()
+        conexion2 = sqlite3.connect("yanina.db")
+        cursor2 = conexion2.cursor()
+        cursor2.execute("SELECT id FROM StockRopa")
+        conexion2.commit()
+        datos = cursor2.fetchall()
+        conexion2.close()
+        idDeStock = []
+        for dato in datos:
+            idDeStock.append(dato[0])
+        print(idDeStock)
+        print(carropStockVta, " hola")
+        for venta in carropStockVta:
+            if venta[1] in idDeStock:
+                idd = (venta[1],)
+                extraerStock = sqlite3.connect("yanina.db")
+                cursorExt = extraerStock.cursor()
+                cursorExt.execute(
+                    "SELECT cantidad FROM StockRopa WHERE id=?", idd)
+                extraerStock.commit()
+                stock = cursorExt.fetchall()
+                print(stock)
+                print(stock[0][0])
+                extraerStock.close()
+                stockNuevo = int(stock[0][0])-int(venta[0])
+                venta[0] = stockNuevo
+                conexion = sqlite3.connect("yanina.db")
+                cursor = conexion.cursor()
+                print(venta)
+                cursor.execute(
+                    "UPDATE StockRopa SET cantidad=? WHERE id=?", venta)
+                conexion.commit()
+                conexion.close()
+    if(condicionVenta=="cuenta corriente"):
+        idCliente=int(entryCodVenta.get())
+        idC=(idCliente,)
+        extraerSaldo=sqlite3.connect("yanina.db")
+        cursor3=extraerSaldo.cursor()
+        cursor3.execute("SELECT saldo FROM Cliente WHERE id=?",idC)
+        extraerSaldo.commit()
+        saldoAnterior=cursor3.fetchall()
+        extraerSaldo.close()
+        saldoNuevo=float(saldoAnterior[0][0])-float(entryTotalVta.get())
+        saldoActualizar=(saldoNuevo,idCliente,)
+        conexion4=sqlite3.connect("yanina.db")
+        cursor4=conexion4.cursor()
+        cursor4.execute("UPDATE Cliente SET saldo=? WHERE id=?",saldoActualizar)
+        conexion4.commit()
+        conexion4.close()
+
+
+    del carroVenta[:]
+    del carropStockVta[:]
+    for i in treeVenta.get_children():
+        treeVenta.delete(i)
+
 def agregarVenta():
-    listaAgregarVta=[]
-    listaAgregarVta.append(entryFechaVta.get())
-    listaAgregarVta.append(int(entryCodCliente.get()))
-    listaAgregarVta.append(entryNombreCliente.get())
-    listaAgregarVta.append(entryNombre.get())
-    listaAgregarVta.append("condicion")
-    listaAgregarVta.append(int(entryCantidadVta.get()))
-    listaAgregarVta.append(int(entryPrecioVta.get()))
-    subtotal=int(entryCantidadVta.get())*int(entryPrecioVta.get())
-    listaAgregarVta.append(subtotal)
-    """listapStock=[]
-    listapStock.append(entryNombre.get())
-    listapStock.append(int(entryCantidad.get()))
-    listapStock.append(int(entryPrecioCompra.get()))
-    listapStock.append(int(entryCodCompra.get()))"""
-    print (listaAgregarVta)
-    """carroVenta.append(listaAgregarVta)
-    carropStockVta.append(listapStock)"""
-    nivel1=treeVenta.insert("", "end", text=entryNombre.get(),values=(entryCantidadVta.get(),entryPrecioVta.get(),subtotal))
-    entryCodCompra.delete(0,END)
-    entryNombre.delete(0,END)
-    entryCantidadVta.delete(0,END)
-    entryPrecioVta.delete(0,END)
+    datos=[entryFechaVta.get(),entryCodCliente.get(),entryNombreCliente.get(),entryCodVenta.get(),entryNombre.get(),entryCantidadVta.get(),entryPrecioVta.get()]
+    datos2=[entryCodCliente.get(), entryCodVenta.get(),entryCantidadVta.get(), entryPrecioVta.get()]
+
+    b=0
+    while (b==0):
+        for a in datos:
+            if (a==""):
+                messagebox.showinfo("Error","Complete todos los campos")
+                b=1
+                break
+            else:
+                b=2
+    if(b==1):
+        print("no cumplió con los requisitos")
+    elif(b==2):
+        b2=0
+        while (b2==0):
+            for a in datos2:
+                try:
+                    if float(a):
+                        b2=1
+                except ValueError:
+                    messagebox.showinfo("Error","Ingrese datos numéricos por favor")
+                    b2=2
+                    break
+        if(b2==2):
+            print("no cumplió con los requisitos")
+        elif(b2==1):
+            listaAgregarVta=[]
+            listaAgregarVta.append(entryFechaVta.get())
+            listaAgregarVta.append(int(entryCodCliente.get()))
+            listaAgregarVta.append(entryNombreCliente.get())
+            listaAgregarVta.append(entryNombre.get())
+            listaAgregarVta.append(int(entryCantidadVta.get()))
+            listaAgregarVta.append(float(entryPrecioVta.get()))
+            subtotal=int(entryCantidadVta.get())*float(entryPrecioVta.get())
+            subtotalInicial=float(entryTotalVta.get())
+            subtotalNuevo=subtotalInicial+subtotal
+            entryTotalVta.config(state="normal")
+            entryTotalVta.delete(0,END)
+            entryTotalVta.insert(0,subtotalNuevo)
+            entryTotalVta.config(state="readonly")
+            listaAgregarVta.append(subtotal)
+            listapStockVta=[]
+            listapStockVta.append(int(entryCantidadVta.get()))
+            listapStockVta.append(int(entryCodVenta.get()))
+            print (listaAgregarVta)
+            carroVenta.append(listaAgregarVta)
+            carropStockVta.append(listapStockVta)
+            nivel1=treeVenta.insert("", "end", text=entryNombre.get(),values=(entryCantidadVta.get(),entryPrecioVta.get(),subtotal))
+            entryCodVenta.delete(0,END)
+            entryNombre.delete(0,END)
+            entryCantidadVta.delete(0,END)
+            entryPrecioVta.delete(0,END)
 
 def ventaProducto(a):
     sacarFrame()
@@ -490,10 +720,10 @@ def ventaProducto(a):
     btVerCodCliente.place(x=350,y=200)
     btNuevoCliente=Button(frVentas,text="Nuevo",width='8',font=("Helvetica",12),bg="#F7A998", command=clienteNuevo)
     btNuevoCliente.place(x=440,y=200)
-    global entryCodCompra
-    entryCodCompra=Entry(frVentas,width='5',font=('Helvetica',14))
-    entryCodCompra.place(x=300,y=275)
-    btVerCodVenta=Button(frVentas,text="Ver Cod",width='8',font=("Helvetica",12),bg="#F7A998",command=lambda:listarproductos(a))
+    global entryCodVenta
+    entryCodVenta=Entry(frVentas,width='5',font=('Helvetica',14),state="readonly")
+    entryCodVenta.place(x=300,y=275)
+    btVerCodVenta=Button(frVentas,text="Ver Cod",width='8',font=("Helvetica",12),bg="#F7A998",command=lambda:listarproductosVta(a))
     btVerCodVenta.place(x=370,y=275)
     global entryNombre
     entryNombre=Entry(frVentas,width='20',font=('Helvetica',14),state="readonly")
@@ -504,10 +734,11 @@ def ventaProducto(a):
     global entryPrecioVta
     entryPrecioVta=Entry(frVentas,width='5',font=('Helvetica',14))
     entryPrecioVta.place(x=250,y=380)
-    condicion=IntVar()
-    contado=Radiobutton(frVentas,text='Contado',value=0,bg='#cdcac3',font=('Helvetica',15))
+    global c
+    c=IntVar()
+    contado=Radiobutton(frVentas,text='Contado',value=0,variable=c,bg='#cdcac3',font=('Helvetica',15),command=condiciones)
     contado.place(x=750,y=400)
-    cuentacorriente=Radiobutton(frVentas,text='Cta.Cte.',value=1,bg='#cdcac3',font=('Helvetica',15))
+    cuentacorriente=Radiobutton(frVentas,text='Cta.Cte.',value=1,variable=c,bg='#cdcac3',font=('Helvetica',15),command=condiciones)
     cuentacorriente.place(x=900,y=400)
     btAgregarVenta=Button(frVentas,text="Agregar",width='15',font=("Helvetica",15),bg="#F7A998",command=agregarVenta)
     btAgregarVenta.place(x=150,y=470)
@@ -525,73 +756,17 @@ def ventaProducto(a):
     treeVenta.heading("two", text="Precio unit")
     treeVenta.heading("three", text="Subtotal")
     canvas.create_text(1060,415, text="TOTAL:",font=('Helvetica',15,"bold"),fill="#F34B2C")
-    entryTotal=Entry(frVentas,width='8',font=('Helvetica',14),state='readonly')
-    entryTotal.place(x=1110,y=400)
-    btVender=Button(frVentas,text="Vender",width='15',font=("Helvetica",15),bg="#F7A998")
+    global entryTotalVta
+    entryTotalVta=Entry(frVentas,width='8',font=('Helvetica',14))
+    entryTotalVta.place(x=1110,y=400)
+    entryTotalVta.insert(0,0)
+    entryTotalVta.config(state="readonly")
+    btVender=Button(frVentas,text="Vender",width='15',font=("Helvetica",15),bg="#F7A998",command=lambda:terminarVenta(a))
     btVender.place(x=610,y=450)
     btCancelar=Button(frVentas,text="Cancelar",width='15',font=("Helvetica",15),bg="#F7A998")
     btCancelar.place(x=810,y=450)
     btMenuVenta=Button(frVentas,text="Menu ventas",width='15',font=("Helvetica",15),bg="#F7A998",command=frameVentas)
     btMenuVenta.place(x=1010,y=450)
-
-def ventaRopa():
-    sacarFrame()
-    global frVentaRopa
-    frVentaRopa=Frame(ventana)
-    frVentaRopa.pack(expand=1,fill='both')
-    global frameOpen
-    frameOpen=10
-    global imgFondoB
-    imgFondoB=ImageTk.PhotoImage(Image.open("bagues22.png"))
-    canvas = Canvas(frVentaRopa, width=2000, height=800)
-    canvas.place(x=0,y=0)
-    canvas.create_image(0,0,image=imgFondoB,anchor=NW)
-    canvas.create_text(700,100, text="VENTAS ROPA",font=('Helvetica',45,"underline","bold"),fill="#F34B2C")
-    canvas.create_text(200,150, text="Carga de productos:",font=('Helvetica',15,"bold","underline"),fill="#F34B2C")
-    canvas.create_text(100,185, text="Fecha(dd/mm/aaaa):",font=('Helvetica',15,"bold"),fill="#F34B2C",anchor="w")
-    canvas.create_text(100,220, text="Número de cliente:",font=('Helvetica',15,"bold"),fill="#F34B2C",anchor="w")
-    canvas.create_text(100,255, text="Cliente:",font=('Helvetica',15,"bold"),fill="#F34B2C",anchor="w")
-    canvas.create_text(100,290, text="Código de producto:",font=('Helvetica',15,"bold"),fill="#F34B2C",anchor="w")
-    canvas.create_text(100,325, text="Nombre del producto:",font=('Helvetica',15,"bold"),fill="#F34B2C",anchor="w")
-    canvas.create_text(100,360, text="Cantidad de productos:",font=('Helvetica',15,"bold"),fill="#F34B2C",anchor="w")
-    canvas.create_text(100,395, text="Precio unitario:",font=('Helvetica',15,"bold"),fill="#F34B2C",anchor="w")
-    entryFecha=Entry(frVentaRopa,width="10",font=('Helvetica',14))
-    entryFecha.place(x=310,y=150)
-    entryCodCliente=Entry(frVentaRopa,width="5",font=('Helvetica',14))
-    entryCodCliente.place(x=280,y=205)
-    entryNombreCliente=Entry(frVentaRopa,width="20",font=('Helvetica',14),state="readonly")
-    entryNombreCliente.place(x=180,y=240)
-    btVerCod=Button(frVentaRopa,text="Ver Cod",width='8',font=("Helvetica",12),bg="#F7A998")
-    btVerCod.place(x=350,y=200)
-    btNuevoprod=Button(frVentaRopa,text="Nuevo",width='8',font=("Helvetica",12),bg="#F7A998")
-    btNuevoprod.place(x=440,y=200)
-    entryCodProducto=Entry(frVentaRopa,width='5',font=('Helvetica',14))
-    entryCodProducto.place(x=300,y=275)
-    entryNombreProducto=Entry(frVentaRopa,width='20',font=('Helvetica',14),state="readonly")
-    entryNombreProducto.place(x=310,y=310)
-    entryCantidad=Entry(frVentaRopa,width='5',font=('Helvetica',14))
-    entryCantidad.place(x=325,y=345)
-    entryPrecio=Entry(frVentaRopa,width='5',font=('Helvetica',14))
-    entryPrecio.place(x=250,y=380)
-    condicion=IntVar()
-    contado=Radiobutton(frVentaRopa,text='Contado',value=0,bg='#cdcac3',font=('Helvetica',15))
-    contado.place(x=750,y=350)
-    cuentacorriente=Radiobutton(frVentaRopa,text='Cta.Cte.',value=1,bg='#cdcac3',font=('Helvetica',15))
-    cuentacorriente.place(x=900,y=350)
-    btAgregarVenta=Button(frVentaRopa,text="Agregar",width='15',font=("Helvetica",15),bg="#F7A998")
-    btAgregarVenta.place(x=150,y=420)
-    canvas.create_text(700,150, text="Resumen:",font=('Helvetica',15,"bold","underline"),fill="#F34B2C")
-    listCarro=Listbox(frVentaRopa,width=100,height=10)
-    listCarro.place (x=600,y=170)
-    canvas.create_text(1060,355, text="TOTAL:",font=('Helvetica',15,"bold"),fill="#F34B2C")
-    entryTotal=Entry(frVentaRopa,width='8',font=('Helvetica',14),state='readonly')
-    entryTotal.place(x=1110,y=340)
-    btVender=Button(frVentaRopa,text="Vender",width='15',font=("Helvetica",15),bg="#F7A998")
-    btVender.place(x=610,y=400)
-    btCancelar=Button(frVentaRopa,text="Cancelar",width='15',font=("Helvetica",15),bg="#F7A998")
-    btCancelar.place(x=810,y=400)
-    btMenuVenta=Button(frVentaRopa,text="Menu ventas",width='15',font=("Helvetica",15),bg="#F7A998",command=frameVentas)
-    btMenuVenta.place(x=1010,y=400)
 
 def frameVentas():
     sacarFrame()
@@ -1088,8 +1263,8 @@ def framePrincipal():
     btComprasB.place(x=320,y=200)
     btVentasB=Button(frPrincipal, text="Ventas",width='20',font=('Helvetica',15),bg="#F7A998", command=frameVentas)
     btVentasB.place(x=570,y=200)
-    btPagosB=Button(frPrincipal, text="Pagos",width='20',font=('Helvetica',15),bg="#F7A998",command=framePagos)
-    btPagosB.place(x=820,y=200)
+    btClientes = Button(frPrincipal, text="Clientes", width='20', font=('Helvetica', 15), bg="#F7A998", command=frameSaldoCliente)
+    btClientes.place(x=820,y=200)
     btSalirB=Button(frPrincipal, text="Salir",width='20',font=('Helvetica',15),bg="#F7A998",command=frameSalir)
     btSalirB.place(x=1070,y=200)
 
